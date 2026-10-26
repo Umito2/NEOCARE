@@ -8,3 +8,7 @@ neocare_auth.sqlite3
 neocare_auth.sqlite3-shm
 neocare_auth.sqlite3-wal
 serviceAccountKey*.json
+node_modules/
+
+# Local Netlify folder
+.netlify
