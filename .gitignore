@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+.vercel/
+__pycache__/
+*.py[cod]
+neocare_auth.sqlite3
+neocare_auth.sqlite3-shm
+neocare_auth.sqlite3-wal
+serviceAccountKey*.json

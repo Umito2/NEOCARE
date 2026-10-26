@@ -1,0 +1,1024 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f8f7">
+  <title>NEOCARE | Child Profiles</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #183a3b;
+      --muted: #718484;
+      --teal: #147d78;
+      --teal-dark: #106864;
+      --line: #e4ece9;
+      --surface: #fff;
+      --canvas: #f5f8f7;
+      --danger: #a23d48;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: var(--canvas); color: var(--ink); }
+    button, input, select { font: inherit; }
+    .shell { min-height: 100vh; }
+    .topbar {
+      height: 76px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 clamp(20px, 5vw, 76px); background: var(--surface); border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-size: 19px; font-weight: 750; letter-spacing: -.04em; }
+    .brand-mark {
+      width: 38px; height: 38px; display: grid; place-items: center; color: white; background: var(--teal);
+      border-radius: 13px; font-size: 21px; box-shadow: 0 5px 14px #147d782e;
+    }
+    .brand span:last-child { color: var(--teal); }
+    .connection { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 13px; }
+    .dot { width: 8px; height: 8px; background: #b5c2bf; border-radius: 50%; }
+    .dot.online { background: #35a77e; box-shadow: 0 0 0 4px #35a77e1c; }
+    main { width: min(1120px, calc(100% - 40px)); margin: 52px auto 80px; }
+    .intro { margin-bottom: 30px; }
+    .eyebrow { color: var(--teal); font-size: 11px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 9px; font-size: clamp(30px, 4vw, 40px); letter-spacing: -.055em; line-height: 1.1; }
+    .intro p { max-width: 600px; margin: 0; color: var(--muted); font-size: 15px; line-height: 1.65; }
+    .layout { display: grid; grid-template-columns: minmax(0, .93fr) minmax(0, 1.07fr); align-items: start; gap: 22px; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 8px 30px #234b3a08; }
+    .form-card { padding: 26px; }
+    .card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 23px; }
+    h2 { margin: 0 0 6px; font-size: 18px; letter-spacing: -.025em; }
+    .card-heading p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .icon-box { width: 39px; height: 39px; display: grid; place-items: center; flex: 0 0 auto; color: var(--teal); background: #eaf5f2; border-radius: 12px; font-size: 20px; }
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 17px 14px; }
+    .field { display: flex; flex-direction: column; gap: 7px; }
+    .field.full { grid-column: 1 / -1; }
+    label { color: #395354; font-size: 12px; font-weight: 650; }
+    input {
+      width: 100%; height: 44px; padding: 0 12px; color: var(--ink); background: #fff;
+      border: 1px solid #dce6e2; border-radius: 9px; outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    input::placeholder { color: #a2b0ad; }
+    input:focus { border-color: #48a19a; box-shadow: 0 0 0 3px #147d781a; }
+    .input-wrap { position: relative; }
+    .input-wrap input { padding-right: 50px; }
+    .unit { position: absolute; top: 50%; right: 12px; transform: translateY(-50%); color: #849390; font-size: 12px; pointer-events: none; }
+    .hint { color: #899996; font-size: 11px; line-height: 1.45; }
+    .divider { height: 1px; margin: 22px 0 18px; background: var(--line); }
+    .actions { display: flex; align-items: center; gap: 10px; }
+    .button {
+      min-height: 43px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 0 16px; border: 0; border-radius: 9px; cursor: pointer; font-size: 13px; font-weight: 700; transition: background .15s, transform .15s;
+    }
+    .button:active { transform: translateY(1px); }
+    .primary { flex: 1; color: #fff; background: var(--teal); }
+    .primary:hover { background: var(--teal-dark); }
+    .secondary { color: #45605e; background: #eff4f2; }
+    .secondary:hover { background: #e5eeeb; }
+    .button:disabled { cursor: wait; opacity: .65; }
+    .message { display: none; margin-top: 14px; padding: 11px 12px; border-radius: 9px; font-size: 12px; line-height: 1.5; }
+    .message.show { display: block; }
+    .message.success { color: #23684e; background: #eaf7f0; }
+    .message.error { color: #8b3540; background: #fff0f0; }
+    .list-card { overflow: hidden; }
+    .list-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 24px 24px 19px; }
+    .list-head .button { min-height: 36px; padding: 0 12px; font-size: 12px; }
+    .parent-layout { grid-template-columns: minmax(0, 1fr); }
+    .parent-layout .list-card { min-height: 280px; }
+    .parent-layout td { padding-top: 18px; padding-bottom: 18px; font-size: 14px; }
+    .parent-layout .child-name { font-size: 15px; }
+    .parent-layout .edit-button, .parent-layout .delete-button {
+      min-width: 76px; min-height: 38px; padding: 0 14px; font-size: 13px;
+    }
+    .parent-layout .delete-button { margin-left: 8px; }
+    .parent-profile-card { grid-column: 1 / -1; }
+    .clinic-workspace { width: min(1500px, calc(100% - 40px)); }
+    .clinic-layout { grid-template-columns: minmax(0, 1fr); }
+    .clinic-layout .list-card { min-width: 0; }
+    .clinic-layout #profile-list { overflow-x: auto; }
+    .clinic-layout td { padding-top: 17px; padding-bottom: 17px; }
+    .clinic-layout .child-name { font-size: 14px; }
+    .clinic-layout .edit-button, .clinic-layout .delete-button {
+      min-width: 70px; min-height: 36px; padding: 0 12px; font-size: 12px;
+    }
+    .clinic-layout .delete-button { margin-left: 7px; }
+    .profile-count { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 23px; margin-left: 5px; padding: 0 7px; color: var(--teal); background: #eaf5f2; border-radius: 20px; font-size: 11px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    thead { background: #f8faf9; }
+    th { padding: 11px 14px; color: #82918e; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+    th:first-child, td:first-child { padding-left: 24px; }
+    th:last-child, td:last-child { padding-right: 24px; }
+    td { padding: 14px; border-top: 1px solid #edf1ef; color: #4c6261; font-size: 12px; white-space: nowrap; }
+    .child-name { color: var(--ink); font-size: 13px; font-weight: 700; }
+    .child-id { display: block; margin-top: 3px; color: #94a29f; font-size: 10px; }
+    .edit-button { padding: 5px 9px; color: var(--teal); background: #eff7f5; border: 0; border-radius: 7px; cursor: pointer; font-size: 11px; font-weight: 700; }
+    .edit-button:hover { background: #e1f1ed; }
+    .delete-button { margin-left: 5px; padding: 5px 9px; color: var(--danger); background: #fff1f1; border: 0; border-radius: 7px; cursor: pointer; font-size: 11px; font-weight: 700; }
+    .delete-button:hover { background: #ffe4e5; }
+    .empty { padding: 46px 24px 52px; text-align: center; }
+    .empty-icon { width: 48px; height: 48px; display: grid; place-items: center; margin: 0 auto 14px; color: var(--teal); background: #eaf5f2; border-radius: 15px; font-size: 22px; }
+    .empty strong { display: block; margin-bottom: 6px; font-size: 13px; }
+    .empty p { max-width: 250px; margin: 0 auto; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .security-note { display: flex; gap: 9px; margin: 16px 0 0; padding: 12px; color: #71817e; background: #f7f9f8; border-radius: 9px; font-size: 11px; line-height: 1.5; }
+    .security-note span { color: var(--teal); }
+    .sensor-card { margin-top: 22px; padding: 26px; }
+    .sensor-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .sensor-heading p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .sensor-toolbar { display: flex; align-items: center; gap: 10px; margin: 18px 0; }
+    .sensor-toolbar select { min-height: 40px; min-width: 190px; padding: 0 10px; color: var(--ink); background: white; border: 1px solid var(--line); border-radius: 8px; }
+    .sensor-status { margin: 0 0 14px; color: var(--muted); font-size: 12px; }
+    .sensor-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+    .sensor-tile { min-height: 105px; padding: 15px; background: #f8faf9; border: 1px solid var(--line); border-radius: 12px; }
+    .sensor-tile span, .sensor-tile small { display: block; color: var(--muted); font-size: 11px; }
+    .sensor-tile strong { display: block; margin: 12px 0 3px; color: var(--ink); font-size: 24px; letter-spacing: -.04em; }
+    .sensor-note { margin: 15px 0 0; color: #899996; font-size: 11px; line-height: 1.5; }
+    .report-panel { margin-top: 12px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+    .report-panel[hidden] { display: none; }
+    .report-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .report-title h3 { margin: 0; font-size: 17px; }
+    .report-subject { color: var(--muted); font-size: 12px; }
+    .report-panel h4 { margin: 15px 0 7px; font-size: 13px; }
+    .report-panel ul { margin: 0; padding-left: 20px; color: #536967; font-size: 12px; line-height: 1.65; }
+    .report-disclaimer { margin: 18px 0 0; padding: 11px; border-radius: 8px; background: #fff8e8; color: #79633d; font-size: 11px; line-height: 1.5; }
+    .top-actions { display: flex; align-items: center; gap: 14px; }
+    .account-name { color: var(--muted); font-size: 12px; }
+    .auth-card { width: min(560px, calc(100% - 32px)); margin: 54px auto; padding: 28px; }
+    .auth-card p { color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .auth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .auth-field { display: flex; flex-direction: column; gap: 7px; }
+    .auth-field.full { grid-column: 1 / -1; }
+    .auth-field input, .auth-field select, .threshold-field input { height: 42px; padding: 0 11px; border: 1px solid var(--line); border-radius: 8px; background: white; }
+    .auth-switch { margin-top: 16px; text-align: center; }
+    .text-button { padding: 0; border: 0; color: var(--teal); background: none; cursor: pointer; font-weight: 700; }
+    .workspace[hidden], .auth-card[hidden] { display: none; }
+    .workspace { margin-top: 30px; }
+    .doctor-panel { margin-bottom: 20px; padding: 23px; }
+    .doctor-panel h2 { margin-bottom: 8px; }
+    .threshold-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; }
+    .threshold-field { display: flex; flex-direction: column; gap: 7px; }
+    .threshold-field label { line-height: 1.4; }
+    .threshold-panel-note { color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .alert-list { display: grid; gap: 10px; }
+    .alert-item { padding: 13px; border: 1px solid var(--line); border-radius: 10px; }
+    .alert-item strong { display: block; margin-bottom: 4px; }
+    .alert-item p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .risk-status { font-weight: 750; }
+    .risk-status.normal { color: #26744f; }
+    .risk-status.warning { color: #99680e; }
+    .risk-status.critical { color: #a23d48; }
+    .risk-status.waiting-for-readings, .risk-status.incomplete-reading { color: #657776; }
+    .latest-vitals { min-width: 190px; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    @media print {
+      .topbar, .intro, .layout, .sensor-heading, .sensor-toolbar, .sensor-status,
+      .sensor-grid, .sensor-note, .print-report { display: none !important; }
+      main { width: 100%; margin: 0; }
+      .sensor-card { padding: 0; border: 0; box-shadow: none; }
+      .report-panel, .report-panel[hidden] { display: block !important; border: 0; padding: 0; }
+    }
+    @media (max-width: 800px) { .threshold-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 480px) {
+      .auth-card { padding: 20px; }
+      .auth-grid, .threshold-grid { grid-template-columns: 1fr; }
+      .top-actions { gap: 8px; }
+      .account-name { display: none; }
+    }
+    @media (max-width: 800px) {
+      main { margin-top: 36px; }
+      .layout { grid-template-columns: 1fr; }
+      .sensor-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 480px) {
+      .topbar { height: 66px; padding: 0 18px; }
+      .brand { font-size: 17px; }
+      main { width: calc(100% - 28px); margin: 30px auto 50px; }
+      .form-card { padding: 20px; }
+      .field-grid { gap: 14px 10px; }
+      .list-head { padding: 20px 18px 16px; }
+      .sensor-card { padding: 20px; }
+      .sensor-toolbar { align-items: stretch; flex-direction: column; }
+      .sensor-toolbar select { width: 100%; }
+      th:first-child, td:first-child { padding-left: 18px; }
+      th:last-child, td:last-child { padding-right: 18px; }
+      th, td { padding-right: 10px; padding-left: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">✚</span><span>NEO<span>CARE</span></span></div>
+      <div class="top-actions">
+        <div class="connection"><span class="dot" id="health-dot"></span><span id="health-label">Checking connection</span></div>
+        <span class="account-name" id="account-name" hidden></span>
+        <button class="button secondary" id="logout-button" type="button" hidden>Sign out</button>
+      </div>
+    </header>
+
+    <section class="card auth-card" id="auth-card" hidden>
+      <div class="eyebrow">Secure access</div>
+      <h1 id="auth-heading">Welcome to NEOCARE</h1>
+      <p id="auth-description">Sign in to your parent account or clinic dashboard.</p>
+      <form id="login-form">
+        <div class="auth-grid">
+          <div class="auth-field full">
+            <label for="login-role">Account type</label>
+            <select id="login-role"><option value="parent">Parent</option><option value="doctor">Doctor / clinic</option></select>
+          </div>
+          <div class="auth-field full">
+            <label id="login-identifier-label" for="login-identifier">Email</label>
+            <input id="login-identifier" autocomplete="username" required>
+          </div>
+          <div class="auth-field full">
+            <label for="login-password">Password</label>
+            <input id="login-password" type="password" autocomplete="current-password" required>
+          </div>
+        </div>
+        <button class="button primary" type="submit" style="width:100%;margin-top:16px">Sign in</button>
+        <div class="message" id="auth-message" role="status" aria-live="polite"></div>
+      </form>
+      <div class="auth-switch" id="signup-switch">
+        <p>New parent? <button class="text-button" id="show-signup" type="button">Create an account</button></p>
+      </div>
+      <form id="signup-form" hidden>
+        <div class="divider"></div>
+        <h2>Create parent account</h2>
+        <div class="auth-grid">
+          <div class="auth-field full"><label for="signup-parent-name">Parent's name</label><input id="signup-parent-name" maxlength="80" required></div>
+          <div class="auth-field"><label for="signup-email">Email for alerts</label><input id="signup-email" type="email" autocomplete="email" required></div>
+          <div class="auth-field"><label for="signup-phone">Phone number</label><input id="signup-phone" type="tel" autocomplete="tel" required></div>
+          <div class="auth-field full"><label for="signup-password">Password (at least 12 characters)</label><input id="signup-password" type="password" minlength="12" autocomplete="new-password" required></div>
+          <div class="auth-field full"><label for="signup-child-name">Child's name</label><input id="signup-child-name" maxlength="80" required></div>
+          <div class="auth-field"><label for="signup-age">Age (years)</label><input id="signup-age" type="number" min="0.1" max="18" step="0.1" required></div>
+          <div class="auth-field"><label for="signup-height">Height (cm)</label><input id="signup-height" type="number" min="0.1" max="250" step="0.1" required></div>
+          <div class="auth-field"><label for="signup-weight">Weight (kg)</label><input id="signup-weight" type="number" min="0.1" max="200" step="0.1" required></div>
+        </div>
+        <button class="button primary" type="submit" style="width:100%;margin-top:16px">Create parent account</button>
+      </form>
+      <button class="text-button" id="back-to-login" type="button" hidden>Back to sign in</button>
+    </section>
+
+    <main class="workspace" id="workspace" hidden>
+      <section class="intro">
+        <div class="eyebrow">Care dashboard</div>
+        <h1 id="dashboard-title">Child profiles</h1>
+        <p>Manage the basic details used by your NEOCARE monitoring system. Saved profiles are linked to incoming sensor readings.</p>
+        <div class="message" id="dashboard-message" role="status" aria-live="polite"></div>
+      </section>
+
+      <div class="layout">
+        <section class="card form-card parent-profile-card" id="parent-profile-card" hidden>
+          <div class="card-heading">
+            <div>
+              <h2 id="form-title">Add a child</h2>
+              <p>Enter the child's details below.</p>
+            </div>
+            <div class="icon-box" aria-hidden="true">＋</div>
+          </div>
+
+          <form id="profile-form">
+            <div class="field-grid">
+              <div class="field full" id="child-id-field">
+                <label for="child-id">Child ID</label>
+                <input id="child-id" name="child_id" type="text" value="child_01" pattern="child_[0-9]{2}" maxlength="8" placeholder="child_01" required>
+                <span class="hint">Use the same ID configured for the child's ESP32 device (example: child_01).</span>
+              </div>
+              <div class="field full">
+                <label for="name">Child's name</label>
+                <input id="name" name="name" type="text" maxlength="80" autocomplete="off" placeholder="e.g. Alex Morgan" required>
+              </div>
+              <div class="field">
+                <label for="age">Age</label>
+                <div class="input-wrap"><input id="age" name="age_years" type="number" min="0.1" max="18" step="0.1" placeholder="e.g. 4" required><span class="unit">years</span></div>
+              </div>
+              <div class="field">
+                <label for="height">Height</label>
+                <div class="input-wrap"><input id="height" name="height_cm" type="number" min="0.1" max="250" step="0.1" placeholder="e.g. 102" required><span class="unit">cm</span></div>
+              </div>
+              <div class="field">
+                <label for="weight">Weight</label>
+                <div class="input-wrap"><input id="weight" name="weight_kg" type="number" min="0.1" max="200" step="0.1" placeholder="e.g. 16.5" required><span class="unit">kg</span></div>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="actions">
+              <button class="button primary" id="save-button" type="submit">Save child profile <span aria-hidden="true">→</span></button>
+              <button class="button secondary" id="cancel-edit" type="button" hidden>Cancel</button>
+            </div>
+            <div class="message" id="form-message" role="status" aria-live="polite"></div>
+          </form>
+          <p class="security-note"><span aria-hidden="true">●</span><span>Keep your account password private. The ESP32 uses a separate device API key.</span></p>
+        </section>
+
+        <section class="card list-card">
+          <div class="list-head">
+            <div>
+              <h2>Saved children <span class="profile-count" id="profile-count">0</span></h2>
+              <p style="margin:0;color:var(--muted);font-size:12px">Profiles registered in your system</p>
+            </div>
+            <div class="top-actions">
+              <button class="button primary" id="add-child-button" type="button" hidden>＋ Add child</button>
+              <button class="button secondary" id="refresh-button" type="button">↻ <span>Refresh</span></button>
+            </div>
+          </div>
+          <div id="profile-list">
+            <div class="empty"><div class="empty-icon" aria-hidden="true">⌕</div><strong>Profiles will appear here</strong><p>Save a child profile to get started.</p></div>
+          </div>
+        </section>
+      </div>
+      <section class="card doctor-panel" id="threshold-card" hidden>
+        <h2>Clinic alert thresholds</h2>
+        <p class="threshold-panel-note">After you save these clinician-approved thresholds, the API server checks each incoming ESP32 reading against them. The ESP32 only needs to send its readings; it does not need to download the thresholds. SpO₂ and temperature are checked even if respiratory rate or activity is not sent. Alerts are rule-based prompts, not diagnoses. Email delivery separately requires SMTP settings on the server.</p>
+        <form id="threshold-form">
+          <div class="threshold-grid">
+            <div class="threshold-field"><label for="th-spo2">Alert below SpO₂ (%)</label><input id="th-spo2" type="number" min="75" max="100" step="0.1" required></div>
+            <div class="threshold-field"><label for="th-temp-warning">Temperature warning (°C)</label><input id="th-temp-warning" type="number" min="36" max="45" step="0.1" required></div>
+            <div class="threshold-field"><label for="th-temp-critical">Temperature critical (°C)</label><input id="th-temp-critical" type="number" min="36" max="45" step="0.1" required></div>
+            <div class="threshold-field"><label for="th-hr-young">Resting HR max, age 0–3</label><input id="th-hr-young" type="number" min="30" max="250" step="1" required></div>
+            <div class="threshold-field"><label for="th-hr-older">Resting HR max, age over 3</label><input id="th-hr-older" type="number" min="30" max="250" step="1" required></div>
+            <div class="threshold-field"><label for="th-rr-young">Respiratory rate max, age 0–3</label><input id="th-rr-young" type="number" min="10" max="100" step="1" required></div>
+            <div class="threshold-field"><label for="th-rr-older">Respiratory rate max, age over 3</label><input id="th-rr-older" type="number" min="10" max="100" step="1" required></div>
+          </div>
+          <div class="actions" style="margin-top:14px"><button class="button primary" type="submit">Save clinic thresholds</button></div>
+          <div class="message" id="threshold-message" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+      <section class="card doctor-panel" id="alerts-card" hidden>
+        <h2 id="alerts-title">Recent parent alerts</h2>
+        <div class="alert-list" id="alert-list"></div>
+      </section>
+      <section class="card sensor-card" aria-labelledby="sensor-title">
+        <div class="sensor-heading">
+          <div>
+            <h2 id="sensor-title">Live sensor readings</h2>
+            <p>Values shown here come from ESP32 readings received by the server.</p>
+          </div>
+        </div>
+        <div class="sensor-toolbar">
+          <label for="sensor-child">Child profile</label>
+          <select id="sensor-child" aria-label="Select child for live sensor readings">
+            <option value="">Add a child profile first</option>
+          </select>
+          <button class="button secondary" id="refresh-sensors" type="button">Refresh readings</button>
+        </div>
+        <p class="sensor-status" id="sensor-status" role="status" aria-live="polite">Waiting for a child profile.</p>
+        <div class="sensor-grid" aria-live="polite">
+          <div class="sensor-tile"><span>Heart rate</span><strong id="sensor-hr">—</strong><small>bpm</small></div>
+          <div class="sensor-tile"><span>SpO₂</span><strong id="sensor-spo2">—</strong><small>%</small></div>
+          <div class="sensor-tile"><span>Temperature</span><strong id="sensor-temp">—</strong><small>°C</small></div>
+          <div class="sensor-tile"><span>Respiratory rate</span><strong id="sensor-resp">—</strong><small>breaths/min</small></div>
+          <div class="sensor-tile"><span>Activity</span><strong id="sensor-activity">—</strong><small>from device, if provided</small></div>
+        </div>
+        <div class="sensor-toolbar">
+          <button class="button primary" id="generate-report" type="button" disabled>Generate report from latest reading</button>
+        </div>
+        <article class="report-panel" id="sensor-report" hidden aria-live="polite"></article>
+        <p class="sensor-note">No values are simulated. If a field shows “Not provided,” your ESP32 firmware must send that field before it can be displayed.</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const form = document.getElementById("profile-form");
+    const message = document.getElementById("form-message");
+    const saveButton = document.getElementById("save-button");
+    const cancelButton = document.getElementById("cancel-edit");
+    const profileList = document.getElementById("profile-list");
+    const count = document.getElementById("profile-count");
+    const sensorChild = document.getElementById("sensor-child");
+    const sensorStatus = document.getElementById("sensor-status");
+    const authCard = document.getElementById("auth-card");
+    const workspace = document.getElementById("workspace");
+    let currentUser = null;
+    let parentChildId = null;
+    const demoMode = document.body.dataset.demo === "true";
+
+    function showMessage(text, type) {
+      message.textContent = text;
+      message.className = `message show ${type}`;
+    }
+
+    function showDashboardMessage(text, type = "error") {
+      const status = document.getElementById("dashboard-message");
+      status.textContent = text;
+      status.className = `message show ${type}`;
+    }
+
+    function resetProfileForm() {
+      form.reset();
+      document.getElementById("child-id").value = "child_01";
+      document.getElementById("child-id-field").hidden = currentUser?.role === "parent";
+      document.getElementById("form-title").textContent = "Add a child";
+      saveButton.firstChild.textContent = "Save child profile ";
+      cancelButton.hidden = true;
+      document.getElementById("parent-profile-card").hidden = true;
+      parentChildId = null;
+    }
+
+    async function apiRequest(path, options = {}) {
+      const response = await fetch(path, {
+        ...options,
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json", ...options.headers }
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const detail = typeof data.detail === "string" ? data.detail : "The request could not be completed.";
+        throw new Error(detail);
+      }
+      return data;
+    }
+
+    function renderProfiles(profiles) {
+      const previousSelection = sensorChild.value;
+      sensorChild.replaceChildren();
+      profiles.forEach((profile) => {
+        const option = document.createElement("option");
+        option.value = profile.child_id;
+        option.textContent = `${profile.name || "Unnamed child"} (${profile.child_id})`;
+        sensorChild.append(option);
+      });
+      if (!profiles.length) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "Add a child profile first";
+        sensorChild.append(option);
+      } else if (profiles.some((profile) => profile.child_id === previousSelection)) {
+        sensorChild.value = previousSelection;
+      }
+      count.textContent = profiles.length;
+      if (!profiles.length) {
+        profileList.innerHTML = currentUser.role === "doctor"
+          ? '<div class="empty"><div class="empty-icon" aria-hidden="true">⌕</div><strong>No child profiles found</strong><p>Parent registrations will appear here.</p></div>'
+          : '<div class="empty"><div class="empty-icon" aria-hidden="true">⌕</div><strong>No profiles yet</strong><p>Use Add child to register your first child.</p></div>';
+        return;
+      }
+
+      const table = document.createElement("table");
+      table.innerHTML = currentUser.role === "doctor"
+        ? "<thead><tr><th>Child</th><th>Age</th><th>Height</th><th>Weight</th><th>Status</th><th>Latest vitals</th><th>Parent email</th><th>Actions</th></tr></thead>"
+        : "<thead><tr><th>Child</th><th>Age</th><th>Height</th><th>Weight</th><th>Actions</th></tr></thead>";
+      const body = document.createElement("tbody");
+      profiles.forEach((profile) => {
+        const row = document.createElement("tr");
+        const child = document.createElement("td");
+        const name = document.createElement("span");
+        name.className = "child-name";
+        name.textContent = profile.name || "Unnamed child";
+        const id = document.createElement("span");
+        id.className = "child-id";
+        id.textContent = profile.child_id;
+        child.append(name, id);
+        row.append(child);
+
+        [[profile.age_years, "years"], [profile.height_cm, "cm"], [profile.weight_kg, "kg"]].forEach(([value, unit]) => {
+          const cell = document.createElement("td");
+          cell.textContent = value == null ? "—" : `${value} ${unit}`;
+          row.append(cell);
+        });
+
+        if (currentUser.role === "doctor") {
+          const statusCell = document.createElement("td");
+          const status = document.createElement("span");
+          status.className = `risk-status ${(profile.risk_status || "").toLowerCase().replaceAll(" ", "-")}`;
+          status.textContent = profile.risk_status || "Unknown";
+          statusCell.append(status);
+          row.append(statusCell);
+          const latest = profile.latest_reading || {};
+          const vitalsCell = document.createElement("td");
+          vitalsCell.className = "latest-vitals";
+          vitalsCell.textContent = latest.timestamp
+            ? `HR ${latest.heart_rate_bpm ?? "—"} bpm · SpO₂ ${latest.spo2_percent ?? "—"}% · ${latest.temperature_c ?? "—"}°C · RR ${latest.respiratory_rate_br_min ?? "—"} · ${latest.activity_state || "activity not provided"}`
+            : "No sensor reading";
+          row.append(vitalsCell);
+          const contact = document.createElement("td");
+          contact.textContent = profile.parent_email || "No parent email";
+          row.append(contact);
+          const actionCell = document.createElement("td");
+          const edit = document.createElement("button");
+          edit.type = "button";
+          edit.className = "edit-button";
+          edit.textContent = "Edit";
+          edit.addEventListener("click", () => {
+            parentChildId = profile.child_id;
+            document.getElementById("parent-profile-card").hidden = false;
+            document.getElementById("child-id").value = profile.child_id;
+            document.getElementById("name").value = profile.name || "";
+            document.getElementById("age").value = profile.age_years;
+            document.getElementById("height").value = profile.height_cm || "";
+            document.getElementById("weight").value = profile.weight_kg || "";
+            document.getElementById("form-title").textContent = `Edit ${profile.name || "child"}'s profile`;
+            saveButton.firstChild.textContent = "Update child profile ";
+            cancelButton.hidden = false;
+            message.className = "message";
+            document.getElementById("name").focus();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+          const remove = document.createElement("button");
+          remove.type = "button";
+          remove.className = "delete-button";
+          remove.textContent = "Delete";
+          remove.addEventListener("click", async () => {
+            if (!window.confirm(`Delete the profile for ${profile.name || profile.child_id}? Historical monitoring data will be kept.`)) return;
+            remove.disabled = true;
+            try {
+              await apiRequest(`/api/v1/children/${encodeURIComponent(profile.child_id)}`, { method: "DELETE" });
+              if (document.getElementById("child-id").value === profile.child_id) {
+                resetProfileForm();
+              }
+              await loadProfiles();
+              showDashboardMessage(`Profile deleted for ${profile.name || profile.child_id}. Historical readings were kept.`, "success");
+            } catch (error) {
+              showDashboardMessage(error.message);
+            } finally {
+              remove.disabled = false;
+            }
+          });
+          actionCell.append(edit, remove);
+          row.append(actionCell);
+          body.append(row);
+          return;
+        }
+
+        const actionCell = document.createElement("td");
+        const edit = document.createElement("button");
+        edit.type = "button";
+        edit.className = "edit-button";
+        edit.textContent = "Edit";
+        edit.addEventListener("click", () => {
+          if (currentUser.role === "parent") parentChildId = profile.child_id;
+          document.getElementById("child-id").value = profile.child_id;
+          document.getElementById("name").value = profile.name || "";
+          document.getElementById("age").value = profile.age_years;
+          document.getElementById("height").value = profile.height_cm || "";
+          document.getElementById("weight").value = profile.weight_kg || "";
+          document.getElementById("form-title").textContent = "Edit child profile";
+          saveButton.firstChild.textContent = "Update child profile ";
+          cancelButton.hidden = false;
+          message.className = "message";
+          document.getElementById("name").focus();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        actionCell.append(edit);
+        row.append(actionCell);
+        body.append(row);
+      });
+      table.append(body);
+      if (currentUser.role === "doctor") {
+        const tableWrap = document.createElement("div");
+        tableWrap.className = "table-wrap";
+        tableWrap.append(table);
+        profileList.replaceChildren(tableWrap);
+      } else {
+        profileList.replaceChildren(table);
+      }
+    }
+
+    async function loadProfiles() {
+      const profiles = await apiRequest("/api/v1/children");
+      renderProfiles(profiles);
+      if (currentUser.role === "parent" && profiles.length) {
+        document.getElementById("child-id-field").hidden = true;
+      } else if (currentUser.role === "doctor") {
+        document.getElementById("child-id-field").hidden = false;
+      }
+      await refreshSensorReading();
+    }
+
+    function setSensorValues(reading) {
+      document.getElementById("sensor-hr").textContent = reading?.heart_rate_bpm ?? "—";
+      document.getElementById("sensor-spo2").textContent = reading?.spo2_percent ?? "—";
+      document.getElementById("sensor-temp").textContent = reading?.temperature_c ?? "—";
+      document.getElementById("sensor-resp").textContent = reading?.respiratory_rate_br_min ?? "Not provided";
+      document.getElementById("sensor-activity").textContent = reading?.activity_state ?? "Not provided";
+    }
+
+    async function refreshSensorReading() {
+      const childId = sensorChild.value;
+      if (!childId) {
+        setSensorValues(null);
+        document.getElementById("generate-report").disabled = true;
+        sensorStatus.textContent = "Add a child profile to view sensor readings.";
+        return;
+      }
+
+      try {
+        const reading = await apiRequest(
+          `/api/v1/children/${encodeURIComponent(childId)}/readings/latest`
+        );
+        if (reading.status !== "available") {
+          setSensorValues(null);
+          document.getElementById("generate-report").disabled = true;
+          sensorStatus.textContent = "No sensor readings received yet for this child. Waiting for the ESP32.";
+          return;
+        }
+        setSensorValues(reading);
+        document.getElementById("generate-report").disabled = (
+          reading.respiratory_rate_br_min == null || !reading.activity_state
+        );
+        sensorStatus.textContent = `Latest reading received: ${reading.timestamp || "time unavailable"}`;
+        if (document.getElementById("generate-report").disabled) {
+          sensorStatus.textContent += " Respiratory rate and activity are needed for the report.";
+        }
+      } catch (error) {
+        setSensorValues(null);
+        document.getElementById("generate-report").disabled = true;
+        sensorStatus.textContent = error.message;
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const payload = {
+        name: document.getElementById("name").value.trim(),
+        age_years: Number(document.getElementById("age").value),
+        height_cm: Number(document.getElementById("height").value),
+        weight_kg: Number(document.getElementById("weight").value)
+      };
+      const childId = currentUser.role === "parent"
+        ? parentChildId
+        : document.getElementById("child-id").value.trim();
+      saveButton.disabled = true;
+      try {
+        const result = await apiRequest(
+          currentUser.role === "parent" && !childId
+            ? "/api/v1/children"
+            : `/api/v1/children/${encodeURIComponent(childId)}`,
+          {
+          method: currentUser.role === "parent" && !childId ? "POST" : "PUT",
+          body: JSON.stringify(payload)
+          }
+        );
+        resetProfileForm();
+        await loadProfiles();
+        showDashboardMessage(
+          `${currentUser.role === "parent" && !childId ? "Child added" : "Profile saved"}: ${result.name} (${result.child_id}).`,
+          "success"
+        );
+      } catch (error) {
+        showDashboardMessage(error.message);
+      } finally {
+        saveButton.disabled = false;
+      }
+    });
+
+    document.getElementById("add-child-button").addEventListener("click", () => {
+      parentChildId = null;
+      resetProfileForm();
+      document.getElementById("form-title").textContent = "Add a child";
+      saveButton.firstChild.textContent = "Save child profile ";
+      document.getElementById("parent-profile-card").hidden = false;
+      document.getElementById("name").focus();
+      window.scrollTo({ top: document.getElementById("parent-profile-card").offsetTop, behavior: "smooth" });
+    });
+
+    document.getElementById("refresh-button").addEventListener("click", async () => {
+      try {
+        await loadProfiles();
+      } catch (error) {
+        showMessage(error.message, "error");
+      }
+    });
+
+    document.getElementById("refresh-sensors").addEventListener("click", refreshSensorReading);
+    sensorChild.addEventListener("change", refreshSensorReading);
+    document.getElementById("generate-report").addEventListener("click", async (event) => {
+      const button = event.currentTarget;
+      const report = document.getElementById("sensor-report");
+      button.disabled = true;
+      try {
+        const response = await apiRequest(
+          `/api/v1/children/${encodeURIComponent(sensorChild.value)}/report/latest`
+        );
+        report.replaceChildren();
+        const heading = document.createElement("div");
+        heading.className = "report-title";
+        const title = document.createElement("h3");
+        title.textContent = "Recommendation report";
+        const printButton = document.createElement("button");
+        printButton.type = "button";
+        printButton.className = "button secondary print-report";
+        printButton.textContent = "Print / Save as PDF";
+        printButton.addEventListener("click", () => window.print());
+        const downloadButton = document.createElement("button");
+        downloadButton.type = "button";
+        downloadButton.className = "button primary print-report";
+        downloadButton.textContent = "Download recommendation PDF";
+        downloadButton.addEventListener("click", async () => {
+          downloadButton.disabled = true;
+          try {
+            const pdfResponse = await fetch(
+              `/api/v1/children/${encodeURIComponent(sensorChild.value)}/report/latest/pdf`,
+              { credentials: "same-origin" }
+            );
+            if (!pdfResponse.ok) {
+              const data = await pdfResponse.json().catch(() => ({}));
+              throw new Error(typeof data.detail === "string" ? data.detail : "The PDF could not be generated.");
+            }
+            const pdf = await pdfResponse.blob();
+            const url = URL.createObjectURL(pdf);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `NEOCARE_${sensorChild.value}_Report.pdf`;
+            link.click();
+            window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+          } catch (error) {
+            showDashboardMessage(error.message);
+          } finally {
+            downloadButton.disabled = false;
+          }
+        });
+        heading.append(title, downloadButton, printButton);
+        report.append(heading);
+
+        const subject = document.createElement("p");
+        subject.className = "report-subject";
+        subject.textContent = `${response.child_name} · Age ${response.age_years} · ${response.timestamp}`;
+        report.append(subject);
+
+        const assessment = document.createElement("p");
+        assessment.textContent = `${response.risk_status} · ${response.condition}`;
+        report.append(assessment);
+        const addList = (headingText, items) => {
+          const section = document.createElement("section");
+          const sectionHeading = document.createElement("h4");
+          sectionHeading.textContent = headingText;
+          const list = document.createElement("ul");
+          items.forEach((item) => {
+            const listItem = document.createElement("li");
+            listItem.textContent = item;
+            list.append(listItem);
+          });
+          section.append(sectionHeading, list);
+          report.append(section);
+        };
+        addList("Assessment notes", response.causes);
+        addList("Recommendations", response.recommendations);
+        if (response.additional_recommendations.length) {
+          addList("Additional suggestions", response.additional_recommendations);
+        }
+        const disclaimer = document.createElement("p");
+        disclaimer.className = "report-disclaimer";
+        disclaimer.textContent = "This is a rule-based summary of device readings, not a medical diagnosis or medical advice. Seek guidance from a qualified clinician.";
+        report.append(disclaimer);
+        report.hidden = false;
+      } catch (error) {
+        showMessage(error.message, "error");
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    cancelButton.addEventListener("click", () => {
+      if (currentUser.role === "parent") {
+        resetProfileForm();
+        showDashboardMessage("Child profile editing cancelled.", "success");
+      } else {
+        resetProfileForm();
+        showDashboardMessage("Profile edit cancelled.", "success");
+      }
+      message.className = "message";
+    });
+
+    function showAuthMessage(text, type = "error") {
+      const authMessage = document.getElementById("auth-message");
+      authMessage.textContent = text;
+      authMessage.className = `message show ${type}`;
+    }
+
+    function showSignIn() {
+      authCard.hidden = false;
+      workspace.hidden = true;
+      document.getElementById("login-form").hidden = false;
+      document.getElementById("signup-form").hidden = true;
+      document.getElementById("signup-switch").hidden = false;
+      document.getElementById("back-to-login").hidden = true;
+      document.getElementById("auth-heading").textContent = "Welcome to NEOCARE";
+      document.getElementById("auth-description").textContent = "Sign in to your parent account or clinic dashboard.";
+    }
+
+    async function loadDoctorThresholds() {
+      const result = await apiRequest("/api/v1/doctor/alert-thresholds");
+      if (!result.thresholds) return;
+      const inputMap = {
+        "th-spo2": "spo2_min",
+        "th-temp-warning": "temperature_warning_c",
+        "th-temp-critical": "temperature_critical_c",
+        "th-hr-young": "heart_rate_max_age_0_3",
+        "th-hr-older": "heart_rate_max_age_over_3",
+        "th-rr-young": "respiratory_rate_max_age_0_3",
+        "th-rr-older": "respiratory_rate_max_age_over_3"
+      };
+      Object.entries(inputMap).forEach(([inputId, key]) => {
+        document.getElementById(inputId).value = result.thresholds[key];
+      });
+    }
+
+    async function loadAlerts() {
+      const alerts = await apiRequest("/api/v1/alerts");
+      const list = document.getElementById("alert-list");
+      list.replaceChildren();
+      if (!alerts.length) {
+        list.textContent = "No parent alerts have been recorded.";
+        return;
+      }
+      alerts.forEach((alert) => {
+        const item = document.createElement("article");
+        item.className = "alert-item";
+        const title = document.createElement("strong");
+        title.textContent = `${alert.severity}: ${alert.child_name} (${alert.child_id})`;
+        const description = document.createElement("p");
+        const createdAt = new Date(alert.created_at * 1000).toLocaleString();
+        description.textContent = `${alert.message} Email: ${alert.email_status}. ${createdAt}`;
+        item.append(title, description);
+        list.append(item);
+      });
+    }
+
+    async function enterDashboard(user) {
+      currentUser = user;
+      authCard.hidden = true;
+      workspace.hidden = false;
+      document.getElementById("account-name").textContent = user.display_name;
+      document.getElementById("account-name").hidden = false;
+      document.getElementById("logout-button").hidden = false;
+      const doctor = user.role === "doctor";
+      document.querySelector(".layout").classList.toggle("parent-layout", !doctor);
+      document.querySelector(".layout").classList.toggle("clinic-layout", doctor);
+      workspace.classList.toggle("clinic-workspace", doctor);
+      const layout = document.querySelector(".layout");
+      const alertsCard = document.getElementById("alerts-card");
+      const sensorCard = document.querySelector(".sensor-card");
+      document.getElementById("add-child-button").hidden = doctor;
+      document.getElementById("parent-profile-card").hidden = true;
+      if (!doctor) {
+        workspace.insertBefore(alertsCard, layout);
+        workspace.insertBefore(sensorCard, layout);
+      }
+      document.getElementById("dashboard-title").textContent = doctor
+        ? "Clinic overview"
+        : "Parent dashboard";
+      document.querySelector(".intro p").textContent = doctor
+        ? "Review children’s latest sensor status and clinic-configured alerts."
+        : demoMode
+          ? "Try profile management with sample data. This demo uses no sensors or Firebase; changes are saved locally."
+          : "Manage your child’s profile and view the latest readings from the ESP32.";
+      document.getElementById("parent-profile-card").hidden = true;
+      document.getElementById("threshold-card").hidden = !doctor;
+      alertsCard.hidden = demoMode;
+      document.getElementById("alerts-title").textContent = doctor
+        ? "Recent parent alerts"
+        : "Recent alerts for your family";
+      sensorCard.hidden = demoMode;
+      try {
+        await loadProfiles();
+        if (doctor) {
+          await loadDoctorThresholds();
+        }
+        if (!demoMode) await loadAlerts();
+      } catch (error) {
+        showDashboardMessage(error.message);
+      }
+    }
+
+    document.getElementById("login-role").addEventListener("change", (event) => {
+      const doctor = event.target.value === "doctor";
+      document.getElementById("login-identifier-label").textContent = doctor
+        ? "Clinic username"
+        : "Email";
+      document.getElementById("login-identifier").type = doctor ? "text" : "email";
+      document.getElementById("login-identifier").autocomplete = doctor
+        ? "username"
+        : "email";
+      document.getElementById("signup-switch").hidden = doctor;
+    });
+
+    document.getElementById("show-signup").addEventListener("click", () => {
+      document.getElementById("login-form").hidden = true;
+      document.getElementById("signup-form").hidden = false;
+      document.getElementById("signup-switch").hidden = true;
+      document.getElementById("back-to-login").hidden = false;
+      document.getElementById("auth-heading").textContent = "Create your parent account";
+      document.getElementById("auth-description").textContent = "Your child’s profile will be linked to your account.";
+    });
+
+    document.getElementById("back-to-login").addEventListener("click", showSignIn);
+
+    document.getElementById("login-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const submitButton = event.currentTarget.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+      try {
+        const result = await apiRequest("/api/v1/auth/login", {
+          method: "POST",
+          body: JSON.stringify({
+            role: document.getElementById("login-role").value,
+            identifier: document.getElementById("login-identifier").value.trim(),
+            password: document.getElementById("login-password").value
+          })
+        });
+        await enterDashboard(result);
+      } catch (error) {
+        showAuthMessage(error.message);
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    document.getElementById("signup-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const signupForm = event.currentTarget;
+      const submitButton = signupForm.querySelector('button[type="submit"]');
+      if (!signupForm.reportValidity()) return;
+      submitButton.disabled = true;
+      try {
+        const result = await apiRequest("/api/v1/auth/signup", {
+          method: "POST",
+          body: JSON.stringify({
+            parent_name: document.getElementById("signup-parent-name").value.trim(),
+            email: document.getElementById("signup-email").value.trim(),
+            phone: document.getElementById("signup-phone").value.trim(),
+            password: document.getElementById("signup-password").value,
+            child_name: document.getElementById("signup-child-name").value.trim(),
+            age_years: Number(document.getElementById("signup-age").value),
+            height_cm: Number(document.getElementById("signup-height").value),
+            weight_kg: Number(document.getElementById("signup-weight").value)
+          })
+        });
+        parentChildId = result.child_id;
+        await enterDashboard(result);
+      } catch (error) {
+        showAuthMessage(error.message);
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    document.getElementById("logout-button").addEventListener("click", async () => {
+      try {
+        await apiRequest("/api/v1/auth/logout", { method: "POST" });
+        currentUser = null;
+        parentChildId = null;
+        document.getElementById("account-name").hidden = true;
+        document.getElementById("logout-button").hidden = true;
+        showSignIn();
+      } catch (error) {
+        showMessage(error.message, "error");
+      }
+    });
+
+    document.getElementById("threshold-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const submitButton = event.currentTarget.querySelector('button[type="submit"]');
+      const fields = {
+        "th-spo2": "spo2_min",
+        "th-temp-warning": "temperature_warning_c",
+        "th-temp-critical": "temperature_critical_c",
+        "th-hr-young": "heart_rate_max_age_0_3",
+        "th-hr-older": "heart_rate_max_age_over_3",
+        "th-rr-young": "respiratory_rate_max_age_0_3",
+        "th-rr-older": "respiratory_rate_max_age_over_3"
+      };
+      const thresholds = {};
+      Object.entries(fields).forEach(([inputId, key]) => {
+        thresholds[key] = Number(document.getElementById(inputId).value);
+      });
+      submitButton.disabled = true;
+      try {
+        await apiRequest("/api/v1/doctor/alert-thresholds", {
+          method: "PUT",
+          body: JSON.stringify(thresholds)
+        });
+        await loadProfiles();
+        await loadAlerts();
+        const status = document.getElementById("threshold-message");
+        status.textContent = "Clinic thresholds saved.";
+        status.className = "message show success";
+      } catch (error) {
+        const status = document.getElementById("threshold-message");
+        status.textContent = error.message;
+        status.className = "message show error";
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    fetch("/health").then((response) => {
+      if (!response.ok) throw new Error();
+      document.getElementById("health-dot").classList.add("online");
+      document.getElementById("health-label").textContent = "Server connected";
+    }).catch(() => {
+      document.getElementById("health-label").textContent = "Server unavailable";
+    });
+
+    apiRequest("/api/v1/auth/me")
+      .then(enterDashboard)
+      .catch(showSignIn);
+    window.setInterval(() => {
+      if (!currentUser) return;
+      refreshSensorReading();
+      if (!demoMode) loadAlerts().catch((error) => showDashboardMessage(error.message));
+    }, 5000);
+  </script>
+</body>
+</html>

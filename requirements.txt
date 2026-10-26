@@ -1,0 +1,4 @@
+firebase-admin
+fpdf2
+fastapi
+uvicorn
